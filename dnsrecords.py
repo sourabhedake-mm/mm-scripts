@@ -1,5 +1,9 @@
+"""
+    The script deletes the DNS records via c8dns service
+    Make sure you have a kube config file at ~/kubeconfig
+"""
+
 import subprocess
-import json
 import time
 
 getPodsCmd = "kubectl --kubeconfig ~/kubeconfig get pods -n c8 | grep c8gui | cut -f1 -d\" \""
@@ -16,12 +20,12 @@ if len(output) == 0:
 
 guiPodName = output[0].decode('utf-8').strip()
 
-print ("Getting DNS records from c8dns service")
+print ("Getting DNS records from the c8dns service")
 
 retry=3
 dnsRecFound = False
 while retry>0:
-    print (execCmd.replace("$1", guiPodName).replace("$2", getDnsAPI))
+    print (">>>", execCmd.replace("$1", guiPodName).replace("$2", getDnsAPI))
     p = subprocess.Popen(execCmd.replace("$1", guiPodName).replace("$2", getDnsAPI), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     stdoutdata, stderrdata = p.communicate()
 
@@ -34,14 +38,17 @@ while retry>0:
         dnsRecFound = True
         break
     retry -= 1
+    print ("Failed to get the complete response. Retrying...")
+
 
 if dnsRecFound == False:
-    print ("Failed to get DNS records. Please retry.")
+    print ("Failed to get the DNS records. Please retry.")
     exit(1)
 
 entJson = eval(dnsEntries)
 entryCount = len(entJson)
 print ("Found", entryCount, "DNS records...")
+
 for idx, url in enumerate(entJson):
     print ("{}/{} - Deleting {}".format(idx+1, entryCount, url))
     p = subprocess.Popen(execCmd.replace("$1", guiPodName).replace("$2", deleteDnsAPI.replace("$1", url)), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
