@@ -36,10 +36,12 @@ def get_collections():
             blank_string = " " * len(print_string)
             print (print_string, end='\r')
             response = requests.get(f'{base_url}/_fabric/{fabric}/_api/collection/{coll_name}/count', headers=auth_headers)
-            count = json.loads(response.text)["count"]
-            if count > HORROR_NO:
+            if response.status_code//100 != 2:
                 recalculate = True
-
+            else:
+                count = json.loads(response.text)["count"]
+                if count > HORROR_NO:
+                    recalculate = True
             print (blank_string, end='\r')
 
             if recalculate:
