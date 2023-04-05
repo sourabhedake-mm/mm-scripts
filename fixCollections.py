@@ -36,6 +36,7 @@ def get_collections():
             blank_string = " " * len(print_string)
             print (print_string, end='\r')
             response = requests.get(f'{base_url}/_fabric/{fabric}/_api/collection/{coll_name}/count', headers=auth_headers)
+            count=-1
             if response.status_code//100 != 2:
                 recalculate = True
             else:
